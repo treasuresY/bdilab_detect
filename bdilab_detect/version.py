@@ -3,6 +3,6 @@
 # 2) we can import it in setup.py for the same reason
 # 3) we can import it into your module module
 
-__version__ = "0.11.0dev"
+__version__ = "0.0.2dev"
 class ded:
     pass

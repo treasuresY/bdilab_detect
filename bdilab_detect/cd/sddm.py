@@ -6,8 +6,8 @@ from bdilab_detect.base import DriftConfigMixin
 
 # if has_pytorch:
 #     from torch.utils.data import DataLoader
-#     from bdilab_server.bdilab_detect.cd.pytorch.classifier import ClassifierDriftTorch
-#     from bdilab_server.bdilab_detect.utils.pytorch.data import TorchDataset
+#     from bdilab_detect.cd.pytorch.classifier import ClassifierDriftTorch
+#     from bdilab_detect.utils.pytorch.data import TorchDataset
 
 if has_tensorflow:
     from bdilab_detect.cd.tensorflow.sddm import SDDMDriftTF

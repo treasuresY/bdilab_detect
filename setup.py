@@ -7,7 +7,7 @@ def readme():
 
 
 # read version file
-exec(open("alibi_detect/version.py").read())
+exec(open("bdilab_detect/version.py").read())
 
 extras_require = {
     "prophet": [
@@ -18,7 +18,8 @@ extras_require = {
     ],
     # https://github.com/SeldonIO/alibi-detect/issues/375 and 387
     "tensorflow": [
-        "tensorflow_probability>=0.8.0, <0.19.0",
+        # "tensorflow_probability>=0.8.0, <0.19.0",
+        "tensorflow_probability==2.7.0",
         "tensorflow>=2.2.0, !=2.6.0, !=2.6.1, <2.11.0",  # https://github.com/SeldonIO/alibi-detect/issues/375 and 387
     ],
     "keops": [
@@ -35,14 +36,14 @@ extras_require = {
 }
 
 setup(
-    name="alibi-detect",
+    name="bdilab-detect",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
     version=__version__,  # type: ignore # noqa F821
     description="Algorithms for outlier detection, concept drift and metrics.",
     long_description=readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/SeldonIO/alibi-detect",
+    url="https://github.com/YFollowSun/bdilab_detect.git",
     license="Apache 2.0",
     packages=find_packages(),
     include_package_data=True,
@@ -50,7 +51,8 @@ setup(
     # lower bounds based on Debian Stable versions where available
     install_requires=[
         "matplotlib>=3.0.0, <4.0.0",
-        "numpy>=1.16.2, <2.0.0",
+        # "numpy>=1.16.2, <2.0.0",
+        "numpy==1.21.3",
         "pandas>=0.23.3, <2.0.0",
         "Pillow>=5.4.1, <10.0.0",
         "opencv-python>=3.2.0, <5.0.0",
@@ -65,7 +67,8 @@ setup(
         "toml>=0.10.1, <1.0.0",  # STC, see https://discuss.python.org/t/adopting-recommending-a-toml-parser/4068
         "catalogue>=2.0.0, <3.0.0",
         "numba>=0.50.0, !=0.54.0, <0.57.0",  # Avoid 0.54 due to: https://github.com/SeldonIO/alibi/issues/466
-        "typing-extensions>=3.7.4.3"
+        "typing-extensions>=3.7.4.3",
+        "shap~=0.41.0"
     ],
     extras_require=extras_require,
     test_suite="tests",

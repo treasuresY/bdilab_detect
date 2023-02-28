@@ -146,8 +146,11 @@ def load_detector_legacy(filepath: Union[str, os.PathLike], suffix: str, **kwarg
 
     if detector_name in ['SDDMDrift', 'HDDDMDrift']:
         emb, tokenizer = None, None
-        if state_dict['other']['load_text_embedding']:
-            emb, tokenizer = load_text_embed(filepath)
+        if state_dict.get('other'):
+            if state_dict.get('other').get('load_text_embedding'):
+                emb, tokenizer = load_text_embed(filepath)
+        # if state_dict['other']['load_text_embedding']:
+        #     emb, tokenizer = load_text_embed(filepath)
         if detector_name == 'HDDDMDrift':
             load_fn = init_cd_hdddmdrift
         elif detector_name == 'SDDMDrift':

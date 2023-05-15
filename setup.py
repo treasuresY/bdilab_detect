@@ -40,7 +40,7 @@ extras_require = {
 
 setup(
     name="bdilab-detect",
-    author="YJX.",
+    author="YJX",
     author_email="1339225017@qq.com",
     version=__version__,  # type: ignore # noqa F821
     description="Algorithms for outlier detection, concept drift and metrics.",

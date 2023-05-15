@@ -3,7 +3,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Union, Any
 
 import numpy as np
 from bdilab_detect.base import BaseDetector, concept_drift_dict
-from bdilab_detect.cd.utils import get_input_shape,logger
+from bdilab_detect.cd.utils import get_input_shape, logger
 import tensorflow as tf
 
 
@@ -88,7 +88,7 @@ class BaseSDDMDrift(BaseDetector):
             self.x_ref = x_ref
 
         # Other attributes
-        self.p_val = p_val
+        self.alpha = p_val
         self.threshold = threshold
         self.window_size = window_size
         self.update_x_ref = update_x_ref
@@ -154,7 +154,7 @@ class BaseSDDMDrift(BaseDetector):
             -> Tuple[float, float, np.ndarray, np.ndarray, Union[np.ndarray, list], Union[np.ndarray, list]]:
         pass
 
-    def retrain(self,x):
+    def retrain(self, x):
         pass
 
     def predict(self, x: Union[np.ndarray, list], return_p_val: bool = True,
@@ -164,7 +164,7 @@ class BaseSDDMDrift(BaseDetector):
         # compute drift scores
         p_val = self.score(x)
         is_drift = False
-        if sum(np.array(p_val) <= self.p_val) > 0:
+        if sum(np.array(p_val) <= self.alpha) > 0:
             self.retrain(x)
             is_drift = True
         # populate drift dict
@@ -172,6 +172,6 @@ class BaseSDDMDrift(BaseDetector):
         cd['meta'] = self.meta
         cd['data']['is_drift'] = is_drift
         if return_p_val:
-            cd['data']['p_val'] = p_val
-            cd['data']['threshold'] = self.p_val
+            cd['data']['p_val'] = min(p_val)
+            cd['data']['threshold'] = self.alpha
         return cd

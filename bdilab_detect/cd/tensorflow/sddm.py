@@ -139,6 +139,12 @@ class SDDMDriftTF(BaseSDDMDrift):
         shap = self.shap_model.get_shap(x_ref)
         self.feature_select = self.feat_selection(shap[shap_class])
         if dtr_model is None:
+            '''
+            这段代码是在决策树可解释性模型中使用的，目的是在训练好的可解释性模型中，构建一个用于计算SHAP（SHapley Additive exPlanations）值的回归模型。
+            具体来说，self.shap_predict是一个DecisionTreeRegressor类型的回归模型，用于计算每个样本的SHAP值。x_ref是一个参考数据集，用于构建SHAP值的基准值。
+            self.shap_model.get_shap(x_ref)[shap_class][:, self.feature_select]是用于训练回归模型的输入数据，其中self.shap_model是已经训练好的可解释性模型，get_shap(x_ref)方法用于计算参考数据集的SHAP值，[shap_class]表示选择要解释的类别（如果是二分类问题，则为0或1），[:, self.feature_select]表示选择要解释的特征。
+            在训练回归模型之后，可以使用该模型来计算每个样本的SHAP值，进而解释模型的预测结果，了解每个特征对于模型预测结果的贡献程度。在计算SHAP值时，需要对每个样本的特征进行二进制编码，然后使用回归模型计算每个特征对于模型预测结果的SHAP值，最终将所有特征的SHAP值相加，得到每个样本的总体SHAP值。
+            '''
             self.shap_predict = DecisionTreeRegressor()
             self.shap_predict.fit(x_ref, self.shap_model.get_shap(x_ref)[shap_class][:, self.feature_select])
         else:
@@ -170,6 +176,7 @@ class SDDMDriftTF(BaseSDDMDrift):
             # 进行数据集的归一化处理
             X = X_train
             y = y_train
+            # map():制作一个迭代器，使用来自每个迭代器的参数来计算函数。当最短的iterable耗尽时停止。
             self.dtypes = list(zip(X.dtypes.index, map(str, X.dtypes)))
             for k, dtype in self.dtypes:
                 if dtype == "float32":
@@ -186,6 +193,7 @@ class SDDMDriftTF(BaseSDDMDrift):
                     y[0] = y[0].replace({values[0]: 0, values[1]: 1})
                 elif len(values) < 20:
                     data_type = "multi-classifier"
+                    # 在使用 `OneHotEncoder` 类时，需要先对数据进行拟合，以确定每个分类变量的取值范围。然后，才能使用 `transform()` 方法将数据转换为二进制特征。
                     enc = OneHotEncoder()
                     enc.fit(y[0].values.reshape(-1, 1))
                     # one-hot编码的结果是比较奇怪的，最好是先转换成二维数组

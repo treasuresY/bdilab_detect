@@ -138,7 +138,7 @@ def load_detector_legacy(filepath: Union[str, os.PathLike], suffix: str, **kwarg
     if detector_name not in [detector for detector in VALID_DETECTORS]:
         raise NotImplementedError(f'{detector_name} is not supported by `load_detector`.')
 
-    # load outlier detector specific parameters
+    # load detector specific parameters
     state_dict = dill.load(open(filepath.joinpath(detector_name + suffix), 'rb'))
 
     # initialize detector

@@ -99,7 +99,7 @@ def _init_detector(cfg: dict) -> ConfigurableDetector:
     detector_name = cfg.pop('name')
 
     # Instantiate the detector
-    klass = getattr(import_module('alibi_detect.cd'), detector_name)
+    klass = getattr(import_module('bdilab_detect.cd'), detector_name)
     detector = klass.from_config(cfg)
     logger.info('Instantiated drift detector {}'.format(detector_name))
     return detector

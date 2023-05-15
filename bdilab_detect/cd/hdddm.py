@@ -16,13 +16,19 @@ def MMD2u(K, m, n):
     Ky = K[m:, m:]
     Kxy = K[:m, m:]
     return 1.0 / (m * (m - 1.0)) * (Kx.sum() - Kx.diagonal().sum()) + \
-           1.0 / (n * (n - 1.0)) * (Ky.sum() - Ky.diagonal().sum()) - \
-           2.0 / (m * n) * Kxy.sum()
+        1.0 / (n * (n - 1.0)) * (Ky.sum() - Ky.diagonal().sum()) - \
+        2.0 / (m * n) * Kxy.sum()
 
 
 def compute_null_distribution(K, m, n, iterations=10000, verbose=False,
                               random_state=None, marker_interval=1000):
-    """Compute the bootstrap null-distribution of MMD2u.
+    """
+        Compute the bootstrap null-distribution of MMD2u.
+
+        这是一个Python函数，用于计算最大平均差异（MMD）统计的引导零分布。MMD是两个概率分布之间距离的度量，通常用于机器学习和统计学中比较不同的数据集或模型。
+        该函数将大小为（m+n）x（m+n）的核矩阵K作为输入，其中m和n是两个不同数据集的大小，并且迭代指定执行引导的迭代次数。verbose参数控制是否在计算期间打印进度信息，random_state是随机数生成器的可选种子。
+        该函数通过对具有替换的组合数据集（m+n）进行重新采样，重新计算核矩阵，然后计算重新采样的数据集之间的MMD统计，来计算MMD统计的零分布。该过程重复迭代次数，以获得MMD统计的一组引导样本。
+        函数的输出是包含MMD统计的引导零分布的大小迭代的阵列。
     """
     if type(random_state) == type(np.random.RandomState()):
         rng = random_state
@@ -96,9 +102,10 @@ def kernel_two_sample_test(X, Y, kernel_function='rbf', iterations=500,
 
 def test_independence_k2st(X, Y, alpha=0.005):
     sigma2 = np.median(pairwise_distances(X, Y, metric='euclidean')) ** 2
+    # 用于计算一组样本之间的核矩阵，也就是将每对样本之间的相似度通过某个核函数进行计算，得到一个对称矩阵，每个元素代表对应两个样本之间的相似度。
     _, _, p_value = kernel_two_sample_test(X, Y, kernel_function='rbf', gamma=1.0 / sigma2, verbose=False)
 
-    return True if p_value <= alpha else False
+    return True if p_value <= alpha else False, p_value
 
 
 def compute_mmd2u(X, Y):
@@ -124,7 +131,7 @@ def compute_hellinger_dist(P, Q):
 class HDDDMDrift(BaseDetector, DriftConfigMixin):
     @deprecated_alias(preprocess_x_ref='preprocess_at_init')
     def __init__(
-            self, X, gamma=1., alpha=None, use_mmd2=False, use_k2s_test=False
+            self, x_ref, gamma=1., alpha=None, use_mmd2=False, use_k2s_test=True
     ) -> None:
         super().__init__()
         if gamma is None and alpha is None:
@@ -136,13 +143,12 @@ class HDDDMDrift(BaseDetector, DriftConfigMixin):
 
         self.gamma = gamma
         self.alpha = alpha
-        self.n_bins = int(np.floor(np.sqrt(X.shape[0])))
-
+        self.n_bins = int(np.floor(np.sqrt(x_ref.shape[0])))
 
         # Initialization
-        self.X_baseline = X
-        self.hist_baseline = compute_histogram(X, self.n_bins)
-        self.n_samples = X.shape[0]
+        self.X_baseline = x_ref
+        self.hist_baseline = compute_histogram(x_ref, self.n_bins)
+        self.n_samples = x_ref.shape[0]
         self.dist_old = 0.
         self.epsilons = []
         self.t_denom = 0
@@ -183,9 +189,10 @@ class HDDDMDrift(BaseDetector, DriftConfigMixin):
 
         # Test for drift
         drift = np.abs(eps) > beta
+        p_value = np.abs(eps)
         if self.use_k2s_test:
-            drift = test_independence_k2st(self.X_baseline, X,
-                                           alpha=self.alpha)  # Testing for independence: Use the kernel two sample test!
+            drift, p_value = test_independence_k2st(self.X_baseline, X,
+                                                    alpha=self.alpha)  # Testing for independence: Use the kernel two sample test!
 
         if drift == True:
             self.drift_detected = True
@@ -204,6 +211,7 @@ class HDDDMDrift(BaseDetector, DriftConfigMixin):
         cd = concept_drift_dict()
         cd["data"]["is_drift"] = self.drift_detected
         cd["data"]["distance"] = np.abs(eps)
-        cd["data"]["threshold"] = beta
+        cd["data"]["threshold"] = self.alpha
+        cd["data"]["p_val"] = p_value
         cd['meta'] = self.meta
         return cd
